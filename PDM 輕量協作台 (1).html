@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDM 輕量協作台</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#eef1f4;--card:#fff;--tx:#17212b;--mut:#5d6b7a;--bd:#d5dce3;--ac:#1f4e79;--hi:#e8590c;--ok:#2b8a3e;--in:#f6f8fa;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--tx:#e6ecf2;--mut:#93a1b0;--bd:#2b3846;--ac:#6ea8e0;--hi:#ff8a4c;--ok:#69db7c;--in:#0f161d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--tx:#e6ecf2;--mut:#93a1b0;--bd:#2b3846;--ac:#6ea8e0;--hi:#ff8a4c;--ok:#69db7c;--in:#0f161d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 "Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif}
+.w{max-width:1080px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:0}
+.sub{color:var(--mut);margin:2px 0 14px;font-size:.9rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.st{background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:6px;padding:8px 12px}
+.st b{display:block;font-size:1.3rem}.st span{color:var(--mut);font-size:.82rem}
+.st.o{border-left-color:var(--hi)}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--bd);margin-bottom:12px}
+nav button{background:none;border:0;padding:10px 16px;font:inherit;color:var(--mut);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--tx);font-weight:700;border-bottom-color:var(--hi)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input,select,textarea,button{font:inherit;color:var(--tx)}
+input,select,textarea{background:var(--in);border:1px solid var(--bd);border-radius:6px;padding:7px 9px;min-width:0}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--hi);outline-offset:1px}
+.row input[type=text],.row input[type=search]{flex:1 1 150px}
+.row input[type=number]{width:90px}
+.b{background:var(--ac);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer}
+:root[data-theme="dark"] .b{color:#0b1520}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .b{color:#0b1520}}
+.g{background:transparent;color:var(--ac);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;cursor:pointer}
+.d{background:none;border:0;color:var(--hi);cursor:pointer;padding:4px 6px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:.82rem;color:var(--mut);border-bottom:2px solid var(--bd);padding:6px}
+td{padding:6px;border-bottom:1px solid var(--bd);vertical-align:middle}
+td input{width:80px}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;border:1px solid var(--bd);font-size:.8rem}
+.s2,.s3{border-color:var(--ok);color:var(--ok)}.s1{border-color:var(--hi);color:var(--hi)}
+.two{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.cv{position:relative;height:230px}
+.bar{height:10px;background:var(--in);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin:6px 0 12px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.ms{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.ms span{flex:1}
+.ms input[type=checkbox]{width:20px;height:20px}
+textarea{width:100%;height:90px;margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem}
+.note{color:var(--mut);font-size:.85rem}
+.hide{display:none}
+@media(max-width:760px){.two{grid-template-columns:1fr}
+.rs thead{display:none}.rs tr{display:block;border:1px solid var(--bd);border-radius:8px;margin:8px 0;padding:4px 6px}
+.rs td{display:flex;justify-content:space-between;align-items:center;border:0;padding:4px 6px}
+.rs td::before{content:attr(data-label);color:var(--mut);font-size:.85rem}
+.rs td:not([data-label])::before{content:none}}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="row" style="justify-content:space-between">
+    <div><h1>PDM 輕量協作台</h1><p class="sub">BOM、工程變更與階段關卡集中管理，資料保存在你的瀏覽器</p></div>
+    <div class="row"><span class="note" id="sy">僅本機儲存</span><button class="g" id="th" type="button">切換深淺色</button></div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <nav role="tablist" id="tabs">
+    <button role="tab" data-t="bom" aria-selected="true">BOM 與零件</button>
+    <button role="tab" data-t="eco" aria-selected="false">工程變更</button>
+    <button role="tab" data-t="ms" aria-selected="false">專案關卡</button>
+    <button role="tab" data-t="cm" aria-selected="false">型態管理</button>
+    <button role="tab" data-t="lg" aria-selected="false">稽核軌跡</button>
+  </nav>
+
+  <section id="p-bom">
+    <div class="card">
+      <div class="row">
+        <input type="text" id="n" placeholder="零件名稱" aria-label="零件名稱">
+        <input type="number" id="qy" min="0" value="1" aria-label="數量" title="數量">
+        <input type="number" id="pr" min="0" value="0" aria-label="單價" title="單價">
+        <select id="sr" aria-label="來源"><option>外購</option><option>自製</option></select>
+        <select id="mt" aria-label="成熟度"><option>概念</option><option>試產</option><option>量產</option></select>
+        <input type="text" id="ca" placeholder="分類" aria-label="分類"><input type="text" id="su" placeholder="核准廠商（逗號分隔）" aria-label="核准廠商"><input type="text" id="dc" placeholder="規格書連結 https://" aria-label="文件連結"><select id="pa" aria-label="上階總成"></select><button class="b" id="add" type="button">新增零件</button>
+      </div>
+      <p class="note" id="nx"></p>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="row" style="margin-bottom:8px"><input type="search" id="q" placeholder="搜尋料號或名稱" aria-label="搜尋"></div>
+        <div class="tw"><table class="rs"><thead><tr><th>料號</th><th>名稱</th><th>版次／狀態</th><th>數量</th><th>單價</th><th>來源</th><th>成熟度</th><th>累計成本</th><th></th></tr></thead><tbody id="bb"></tbody></table></div><div id="dt" class="note"></div>
+      </div>
+      <div class="card"><b>成本結構</b><div class="cv"><canvas id="cv" aria-label="自製與外購成本比例"></canvas></div></div>
+    </div>
+    <div class="card">
+      <b>匯入與匯出</b>
+      <p class="note">欄位：料號、名稱、數量、單價、來源、成熟度。可選取 Excel 或 CSV 檔，或把 CSV 貼到下方文字框。</p>
+      <div class="row">
+        <input type="file" id="fi" accept=".xlsx,.xls,.csv" aria-label="選擇檔案">
+        <button class="g" id="im" type="button">匯入文字框內容</button>
+        <button class="g" id="ex" type="button">產生 CSV 並複製</button>
+      </div>
+      <textarea id="csv" aria-label="CSV 內容" placeholder="料號,名稱,數量,單價,來源,成熟度"></textarea>
+      <p class="note" id="msg" role="status"></p>
+    </div>
+  </section>
+
+  <section id="p-eco" class="hide">
+    <div class="card">
+      <div class="row">
+        <select id="ey" aria-label="類型"><option>ECR</option><option>ECO</option></select><select id="ec" multiple size="3" style="min-width:170px" aria-label="受影響料號（可多選）"></select><input type="date" id="ef" aria-label="生效日期">
+        <input type="text" id="ed" placeholder="變更說明，例如：更換供應商" aria-label="變更說明">
+        <button class="b" id="ea" type="button">建立變更單</button><span class="note" id="em" role="status"></span>
+      </div>
+    </div>
+    <div class="card"><div class="tw"><table class="rs"><thead><tr><th>編號</th><th>料號</th><th>說明</th><th>生效日</th><th>狀態</th><th></th></tr></thead><tbody id="eb"></tbody></table></div></div>
+  </section>
+
+  <section id="p-ms" class="hide">
+    <div class="card"><b id="mp"></b><div class="bar"><i id="mb"></i></div><div id="ml"></div></div>
+  </section>
+
+  <section id="p-cm" class="hide">
+    <div class="card">
+      <div class="row">
+        <select id="ct" aria-label="基準類型"><option value="FBL">功能基準 FBL</option><option value="ABL">分配基準 ABL</option><option value="PBL" selected>產品基準 PBL</option></select>
+        <input type="text" id="cn" placeholder="基準說明，例如：EVT 設計凍結" aria-label="基準說明">
+        <button class="b" id="cb" type="button">凍結為新基準</button>
+      </div>
+      <p class="note">基準建立後不可修改或刪除，版次依序為 Rev A、Rev B…。核准以上且尚未納入基準的工程變更，會自動記入新版次。</p>
+      <p class="note" id="cmsg" role="status"></p>
+    </div>
+    <div class="card"><div class="tw"><table class="rs"><thead><tr><th>版次</th><th>類型</th><th>說明</th><th>日期</th><th>零件／成本</th><th>納入變更</th><th></th></tr></thead><tbody id="cl"></tbody></table></div></div>
+    <div id="cd"></div>
+  </section>
+
+  <section id="p-lg" class="hide">
+    <div class="card"><div class="row" style="margin-bottom:8px"><label for="me">操作者名稱</label><input type="text" id="me" style="max-width:200px"></div><div class="tw"><table class="rs"><thead><tr><th>時間</th><th>操作者</th><th>動作</th></tr></thead><tbody id="lb"></tbody></table></div></div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const KEY='pdm-lite-v1',ST=['草稿','審核中','核准','結案'];
+const $=s=>document.querySelector(s);
+const e=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>'NT$ '+Math.round(n).toLocaleString('zh-TW');
+let S;
+const seed=()=>({
+ bom:[{code:'PRT-0001',name:'主控板 PCBA',qty:1,price:420,src:'外購',mat:'量產'},
+  {code:'PRT-0002',name:'鋁合金外殼',qty:1,price:180,src:'自製',mat:'試產'},
+  {code:'PRT-0003',name:'鋰電池模組',qty:2,price:260,src:'外購',mat:'試產'},
+  {code:'PRT-0004',name:'M3 螺絲組',qty:12,price:2,src:'外購',mat:'量產'}],
+ eco:[{id:'ECO-001',code:'PRT-0003',desc:'電池供應商由 A 改為 B',st:1}],
+ ms:[{n:'概念 Concept',d:'2026-12-01',ok:true},{n:'工程驗證 EVT',d:'2027-02-15',ok:false},{n:'設計驗證 DVT',d:'2027-05-10',ok:false},{n:'生產驗證 PVT',d:'2027-08-01',ok:false},{n:'量產 MP',d:'2027-10-01',ok:false}]});
+function load(){try{const r=localStorage.getItem(KEY);S=r?JSON.parse(r):seed()}catch(x){S=seed()}S.cm=S.cm||[];S.log=S.log||[];norm()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}push()}
+function nextCode(){const n=S.bom.reduce((m,b)=>Math.max(m,parseInt((String(b.code).match(/(\d+)$/)||[0,0])[1])||0),0)+1;return 'PRT-'+String(n).padStart(4,'0')}
+const kids=c=>S.bom.filter(b=>b.parent===c);
+const rc=(b,d=0)=>d>8?0:b.price+kids(b.code).reduce((a,k)=>a+k.qty*rc(k,d+1),0);
+const total=()=>S.bom.filter(b=>!b.parent||!S.bom.some(p=>p.code===b.parent)).reduce((a,b)=>a+b.qty*rc(b),0);
+
+function renderStats(){
+ const open=S.eco.filter(x=>x.st<3).length,done=S.ms.filter(m=>m.ok).length,lb=S.cm[S.cm.length-1],dv=lb?diff(lb).length:null;
+ $('#stats').innerHTML=`<div class="st"><b>${S.bom.length}</b><span>零件數</span></div><div class="st"><b>${fmt(total())}</b><span>BOM 總成本</span></div><div class="st o"><b>${open}</b><span>進行中的變更單</span></div><div class="st"><b>${done}/${S.ms.length}</b><span>已通過關卡</span></div><div class="st o"><b>${dv===null?'—':dv}</b><span>與最新基準的差異</span></div>`;
+}
+function renderBom(){
+ const q=$('#q').value.trim().toLowerCase();
+ const rows=S.bom.map((b,i)=>[b,i]).filter(([b])=>!q||(b.code+b.name).toLowerCase().includes(q));
+ $('#bb').innerHTML=rows.map(([b,i])=>`<tr><td data-label="料號">${e(b.code)}</td><td data-label="名稱">${e(b.name)}</td><td data-label="數量"><input type="number" min="0" value="${b.qty}" data-i="${i}" data-f="qty" aria-label="數量"></td><td data-label="單價"><input type="number" min="0" value="${b.price}" data-i="${i}" data-f="price" aria-label="單價"></td><td data-label="來源">${e(b.src)}</td><td data-label="成熟度">${e(b.mat)}</td><td data-label="小計">${fmt(b.qty*b.price)}</td><td><button class="d" data-del="${i}" type="button">刪除</button></td></tr>`).join('')||'<tr><td colspan="8">沒有符合的零件，請先新增或匯入。</td></tr>';
+ $('#nx').textContent='下一個料號：'+nextCode();
+ $('#ec').innerHTML=S.bom.map(b=>`<option value="${e(b.code)}">${e(b.code)} ${e(b.name)}</option>`).join('');
+}
+let ch;
+function renderChart(){
+ if(!window.Chart)return;
+ const m={};S.bom.forEach(b=>m[b.src]=(m[b.src]||0)+b.qty*b.price);
+ const L=Object.keys(m),D=L.map(k=>m[k]);
+ if(ch){ch.data.labels=L;ch.data.datasets[0].data=D;ch.update()}
+ else{Chart.defaults.color=getComputedStyle(document.documentElement).getPropertyValue('--tx').trim()||'#888';
+  ch=new Chart($('#cv'),{type:'doughnut',data:{labels:L,datasets:[{data:D,backgroundColor:['#1f77b4','#e8590c','#2b8a3e','#7048e8'],borderWidth:0}]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}})}
+}
+function renderEco(){
+ $('#eb').innerHTML=S.eco.map((x,i)=>`<tr><td data-label="編號">${x.id}</td><td data-label="料號">${e(x.code)}</td><td data-label="說明">${e(x.desc)}</td><td data-label="狀態"><span class="tag s${x.st}">${ST[x.st]}</span></td><td>${x.st<3?`<button class="g" data-adv="${i}" type="button">推進到${ST[x.st+1]}</button>`:''}<button class="d" data-ed="${i}" type="button">刪除</button></td></tr>`).join('')||'<tr><td colspan="5">尚無變更單，請在上方建立第一張。</td></tr>';
+}
+function renderMs(){
+ const done=S.ms.filter(m=>m.ok).length,p=S.ms.length?Math.round(done/S.ms.length*100):0;
+ $('#mp').textContent='專案進度 '+p+'%';$('#mb').style.width=p+'%';
+ $('#ml').innerHTML=S.ms.map((m,i)=>`<div class="ms"><input type="checkbox" ${m.ok?'checked':''} data-mk="${i}" aria-label="通過 ${e(m.n)}"><span>${e(m.n)}</span><input type="date" value="${e(m.d)}" data-md="${i}" aria-label="${e(m.n)}日期"></div>`).join('');
+}
+function renderAll(){renderStats();renderBom();renderChart();renderEco();renderMs();renderCm();renderLg()}
+function msg(t){$('#msg').textContent=t}
+
+$('#add').onclick=()=>{
+ const n=$('#n').value.trim();if(!n){msg('請先輸入零件名稱。');$('#n').focus();return}
+ S.bom.push({code:nextCode(),name:n,qty:+$('#qy').value||0,price:+$('#pr').value||0,src:$('#sr').value,mat:$('#mt').value});
+ $('#n').value='';save();renderAll();msg('已新增 '+n+'。')};
+$('#q').oninput=renderBom;
+$('#bb').addEventListener('change',ev=>{const t=ev.target;if(t.dataset.f){S.bom[t.dataset.i][t.dataset.f]=Math.max(0,+t.value||0);save();renderAll()}});
+$('#bb').addEventListener('click',ev=>{const i=ev.target.dataset.del;if(i!==undefined){S.bom.splice(i,1);save();renderAll()}});
+$('#ea').onclick=()=>{
+ const d=$('#ed').value.trim(),c=$('#ec').value;if(!c){msg('請先建立零件。');return}if(!d){$('#ed').focus();return}
+ S.eco.push({id:'ECO-'+String(S.eco.length+1).padStart(3,'0'),code:c,desc:d,st:0});$('#ed').value='';save();renderAll()};
+$('#eb').addEventListener('click',ev=>{const t=ev.target;
+ if(t.dataset.adv!==undefined)S.eco[t.dataset.adv].st++;else if(t.dataset.ed!==undefined)S.eco.splice(t.dataset.ed,1);else return;
+ save();renderAll()});
+$('#ml').addEventListener('change',ev=>{const t=ev.target;
+ if(t.dataset.mk!==undefined)S.ms[t.dataset.mk].ok=t.checked;else if(t.dataset.md!==undefined)S.ms[t.dataset.md].d=t.value;
+ save();renderAll()});
+
+const pick=(r,ks)=>{for(const k of ks)if(r[k]!==undefined&&r[k]!=='')return r[k];return ''};
+function addRows(rows){let n=0;
+ rows.forEach(r=>{const name=pick(r,['名稱','name','Name']);if(!name)return;
+  const mat=pick(r,['成熟度','mat']);
+  S.bom.push({code:String(pick(r,['料號','code','Code'])||nextCode()),name:String(name),qty:+pick(r,['數量','qty'])||1,price:+pick(r,['單價','price'])||0,src:pick(r,['來源','src'])==='自製'?'自製':'外購',mat:['概念','試產','量產'].includes(mat)?mat:'概念'});n++});
+ norm();audit('匯入 '+n+' 筆零件');save();renderAll();msg(n?'已匯入 '+n+' 筆零件。':'沒有讀到有效資料，請確認欄位含「名稱」。')}
+function parse(wb){return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])}
+$('#im').onclick=()=>{try{addRows(parse(XLSX.read($('#csv').value,{type:'string'})))}catch(x){msg('無法解析，請確認為 CSV 格式。')}};
+$('#fi').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{try{addRows(parse(XLSX.read(r.result,{type:'array'})))}catch(x){msg('檔案無法讀取，請改用 .xlsx 或 .csv。')}};
+ r.readAsArrayBuffer(f)};
+$('#ex').onclick=()=>{
+ const csv=XLSX.utils.sheet_to_csv(XLSX.utils.json_to_sheet(S.bom.map(b=>({料號:b.code,名稱:b.name,數量:b.qty,單價:b.price,來源:b.src,成熟度:b.mat}))));
+ const t=$('#csv');t.value=csv;t.select();
+ try{navigator.clipboard.writeText(csv).then(()=>msg('CSV 已複製到剪貼簿。'),()=>msg('已產生 CSV，請在文字框內全選複製。'))}catch(x){msg('已產生 CSV，請在文字框內全選複製。')}};
+
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+ ['bom','eco','ms','cm','lg'].forEach(k=>$('#p-'+k).classList.toggle('hide',k!==b.dataset.t))});
+$('#th').onclick=()=>{const r=document.documentElement,dark=getComputedStyle(r).colorScheme==='dark';r.dataset.theme=dark?'light':'dark'};
+
+const TY={FBL:'功能基準',ABL:'分配基準',PBL:'產品基準'},FL={name:'名稱',qty:'數量',price:'單價',src:'來源',mat:'成熟度',rev:'版次',life:'狀態',parent:'上階'};
+let cmSel=null,rstArm=null;
+const clone=o=>JSON.parse(JSON.stringify(o));
+function diff(base){
+ const cur=new Map(S.bom.map(b=>[b.code,b])),old=new Map(base.bom.map(b=>[b.code,b])),o=[];
+ old.forEach((a,c)=>{const n=cur.get(c);
+  if(!n)o.push({k:'移除',c,name:a.name,t:'',d:-a.qty*a.price});
+  else{const ch=Object.keys(FL).filter(f=>a[f]!==n[f]).map(f=>FL[f]+' '+a[f]+' → '+n[f]);
+   if(ch.length)o.push({k:'變更',c,name:n.name,t:ch.join('；'),d:n.qty*n.price-a.qty*a.price})}});
+ cur.forEach((n,c)=>{if(!old.has(c))o.push({k:'新增',c,name:n.name,t:'',d:n.qty*n.price})});
+ return o}
+function renderCm(){
+ $('#cl').innerHTML=S.cm.map((b,i)=>`<tr><td data-label="版次"><b>${e(b.rev)}</b></td><td data-label="類型">${TY[b.ty]}</td><td data-label="說明">${e(b.note)}</td><td data-label="日期">${e(b.date)}</td><td data-label="零件／成本">${b.bom.length} 項／${fmt(b.bom.reduce((a,x)=>a+x.qty*x.price,0))}</td><td data-label="納入變更">${b.eco.length?e(b.eco.join('、')):'無'}</td><td><button class="g" data-cmp="${i}" type="button">與目前比較</button> <button class="d" data-rst="${i}" type="button">${rstArm===i?'再按一次確認還原':'還原'}</button></td></tr>`).join('')||'<tr><td colspan="7">尚未建立基準。凍結目前的 BOM 即可建立第一個基準。</td></tr>';
+ const b=S.cm[cmSel],box=$('#cd');
+ if(!b){box.className='';box.innerHTML='';return}
+ const d=diff(b),sum=d.reduce((a,x)=>a+x.d,0);
+ box.className='card';
+ box.innerHTML=`<b>目前 BOM 與 ${e(b.rev)} 的差異</b>`+(d.length?`<div class="tw"><table class="rs"><thead><tr><th>類別</th><th>料號</th><th>名稱</th><th>內容</th><th>成本差</th></tr></thead><tbody>${d.map(x=>`<tr><td data-label="類別"><span class="tag ${x.k==='新增'?'s2':x.k==='移除'?'s1':''}">${x.k}</span></td><td data-label="料號">${e(x.c)}</td><td data-label="名稱">${e(x.name)}</td><td data-label="內容">${e(x.t)||'—'}</td><td data-label="成本差">${x.d>0?'+':''}${fmt(x.d)}</td></tr>`).join('')}</tbody></table></div><p class="note">合計成本差：${sum>0?'+':''}${fmt(sum)}</p>`:'<p class="note">目前 BOM 與此基準完全一致。</p>')}
+$('#cb').onclick=()=>{
+ const m=$('#cmsg');
+ if(!S.bom.length){m.textContent='BOM 是空的，請先新增零件。';return}
+ if(S.cm.length>=26){m.textContent='版次已達 Rev Z 上限。';return}
+ const used=S.cm.flatMap(b=>b.eco);
+ const b={rev:'Rev '+String.fromCharCode(65+S.cm.length),ty:$('#ct').value,note:$('#cn').value.trim()||'未填說明',date:new Date().toISOString().slice(0,10),bom:clone(S.bom),eco:S.eco.filter(x=>x.st>=2&&!used.includes(x.id)).map(x=>x.id)};
+ S.cm.push(b);audit('凍結基準 '+b.rev+'（'+TY[b.ty]+'）');$('#cn').value='';cmSel=S.cm.length-1;rstArm=null;save();renderAll();m.textContent='已建立基準 '+b.rev+'。'};
+$('#cl').addEventListener('click',ev=>{const t=ev.target;
+ if(t.dataset.cmp!==undefined){cmSel=+t.dataset.cmp;rstArm=null}
+ else if(t.dataset.rst!==undefined){const i=+t.dataset.rst;
+  if(rstArm===i){S.bom=clone(S.cm[i].bom);norm();audit('還原 BOM 至 '+S.cm[i].rev);rstArm=null;cmSel=i;save();renderAll();$('#cmsg').textContent='已將 BOM 還原為 '+S.cm[i].rev+'。';return}
+  rstArm=i}
+ else return;
+ renderCm()});
+
+/* v3：多階 BOM、版次、變更、稽核、同步（同名函式以後者為準） */
+let ME='本機使用者',sel=null,DBR=null,tm;
+function norm(){S.bom.forEach(b=>{b.parent=b.parent||'';b.rev=b.rev||'A';b.life=b.life||'設計中';b.cat=b.cat||'';b.sup=b.sup||'';b.doc=b.doc||''});S.eco.forEach(x=>{x.codes=x.codes||(x.code?[x.code]:[]);x.type=x.type||'ECO';x.eff=x.eff||''})}
+function audit(a){S.log.unshift({t:new Date().toLocaleString('zh-TW',{hour12:false}),u:ME,a});if(S.log.length>200)S.log.length=200}
+function ordered(){const out=[],seen=new Set(),codes=new Set(S.bom.map(b=>b.code));
+ const walk=(b,l)=>{if(seen.has(b.code))return;seen.add(b.code);out.push([b,l]);kids(b.code).forEach(k=>walk(k,l+1))};
+ S.bom.filter(b=>!b.parent||!codes.has(b.parent)).forEach(b=>walk(b,0));S.bom.forEach(b=>walk(b,0));return out}
+function renderBom(){
+ const q=$('#q').value.trim().toLowerCase();
+ const rows=ordered().filter(([b])=>!q||(b.code+b.name+b.cat+b.sup).toLowerCase().includes(q));
+ $('#bb').innerHTML=rows.map(([b,l])=>{const i=S.bom.indexOf(b),lk=b.life!=='設計中';return `<tr><td data-label="料號"><button class="d" data-dt="${i}" type="button" style="color:var(--ac)">${e(b.code)}</button></td><td data-label="名稱" style="padding-left:${6+l*16}px">${l?'└ ':''}${e(b.name)}</td><td data-label="版次／狀態"><span class="tag ${b.life==='已發行'?'s2':b.life==='作廢'?'s1':''}">Rev ${e(b.rev)}・${b.life}</span></td><td data-label="數量"><input type="number" min="0" value="${b.qty}" data-q="${i}" ${lk?'disabled':''} aria-label="數量"></td><td data-label="單價"><input type="number" min="0" value="${b.price}" data-p="${i}" ${lk?'disabled':''} aria-label="單價"></td><td data-label="來源">${e(b.src)}</td><td data-label="成熟度">${e(b.mat)}</td><td data-label="累計成本">${fmt(b.qty*rc(b))}</td><td>${b.life==='設計中'?`<button class="g" data-rel="${i}" type="button">發行</button>`:b.life==='已發行'?`<button class="g" data-rev="${i}" type="button">升版</button>`:''}<button class="d" data-rm="${i}" type="button">刪除</button></td></tr>`}).join('')||'<tr><td colspan="9">沒有符合的零件，請先新增或匯入。</td></tr>';
+ $('#nx').textContent='下一個料號：'+nextCode();
+ const opt=S.bom.map(b=>`<option value="${e(b.code)}">${e(b.code)} ${e(b.name)}</option>`).join('');
+ const pv=$('#pa').value;$('#pa').innerHTML='<option value="">無上階（頂層）</option>'+opt;$('#pa').value=pv;
+ $('#ec').innerHTML=opt;renderDt()}
+function renderDt(){const b=S.bom[sel],d=$('#dt');if(!b){d.textContent='點選料號可查看詳情與反查。';return}
+ const up=[];let p=S.bom.find(x=>x.code===b.parent),g=0;while(p&&g++<8){up.push(p.code+' '+p.name);const pp=p.parent;p=S.bom.find(x=>x.code===pp)}
+ const ec=S.eco.filter(x=>x.codes.includes(b.code)).map(x=>x.id);
+ d.innerHTML=`<div class="card" style="margin:10px 0 0"><b>${e(b.code)} ${e(b.name)}</b><p class="note">反查（用於）：${up.length?e(up.join(' ← ')):'頂層，無上階'}<br>下階零件：${kids(b.code).length} 項<br>分類：${e(b.cat)||'未填'}｜核准廠商：${e(b.sup)||'未填'}<br>文件：${b.doc.startsWith('http')?`<a href="${e(b.doc)}" target="_blank" rel="noopener">${e(b.doc)}</a>`:'未填'}<br>相關變更：${ec.length?e(ec.join('、')):'無'}</p></div>`}
+$('#add').onclick=()=>{const n=$('#n').value.trim();if(!n){msg('請先輸入零件名稱。');$('#n').focus();return}
+ const b={code:nextCode(),name:n,qty:+$('#qy').value||0,price:+$('#pr').value||0,src:$('#sr').value,mat:$('#mt').value,parent:$('#pa').value,cat:$('#ca').value.trim(),sup:$('#su').value.trim(),doc:$('#dc').value.trim(),rev:'A',life:'設計中'};
+ S.bom.push(b);['#n','#ca','#su','#dc'].forEach(s=>$(s).value='');audit('新增零件 '+b.code+' '+n);save();renderAll();msg('已新增 '+n+'。')};
+$('#bb').addEventListener('change',ev=>{const t=ev.target,f=t.dataset.q!==undefined?'qty':t.dataset.p!==undefined?'price':null;if(!f)return;
+ const b=S.bom[f==='qty'?t.dataset.q:t.dataset.p],v=Math.max(0,+t.value||0);audit(`${b.code} ${f==='qty'?'數量':'單價'} ${b[f]} → ${v}`);b[f]=v;save();renderAll()});
+$('#bb').addEventListener('click',ev=>{const d=ev.target.dataset;let b;
+ if(d.dt!==undefined){sel=+d.dt;renderDt();return}
+ else if(d.rel!==undefined){b=S.bom[d.rel];b.life='已發行';audit(`發行 ${b.code} Rev ${b.rev}`)}
+ else if(d.rev!==undefined){b=S.bom[d.rev];b.rev=String.fromCharCode(b.rev.charCodeAt(0)+1);b.life='設計中';audit(`升版 ${b.code} 至 Rev ${b.rev}`)}
+ else if(d.rm!==undefined){b=S.bom[d.rm];if(kids(b.code).length){msg('此零件仍有下階零件，請先刪除下階。');return}audit('刪除零件 '+b.code);S.bom.splice(d.rm,1);sel=null}
+ else return;save();renderAll()});
+function renderEco(){
+ $('#eb').innerHTML=S.eco.map((x,i)=>`<tr><td data-label="編號">${e(x.id)}</td><td data-label="料號">${e(x.codes.join('、'))||'—'}</td><td data-label="說明">${e(x.desc)}</td><td data-label="生效日">${e(x.eff)||'—'}</td><td data-label="狀態"><span class="tag s${x.st}">${ST[x.st]}</span></td><td>${x.st<3?`<button class="g" data-ea="${i}" type="button">推進到${ST[x.st+1]}</button>`:''}<button class="d" data-ex="${i}" type="button">刪除</button></td></tr>`).join('')||'<tr><td colspan="6">尚無變更單，請在上方建立第一張。</td></tr>'}
+$('#ea').onclick=()=>{const d=$('#ed').value.trim(),cs=[...$('#ec').selectedOptions].map(o=>o.value),ty=$('#ey').value,m=$('#em');
+ if(!cs.length){m.textContent='請至少選擇一個受影響料號。';return}if(!d){$('#ed').focus();return}
+ const id=ty+'-'+String(S.eco.filter(x=>x.type===ty).length+1).padStart(3,'0');
+ S.eco.push({id,type:ty,codes:cs,desc:d,eff:$('#ef').value,st:0});$('#ed').value='';m.textContent='';audit('建立 '+id+'（'+cs.join('、')+'）');save();renderAll()};
+$('#eb').addEventListener('click',ev=>{const d=ev.target.dataset;
+ if(d.ea!==undefined){const x=S.eco[d.ea];x.st++;audit(`${x.id} 狀態 → ${ST[x.st]}`)}
+ else if(d.ex!==undefined){audit('刪除 '+S.eco[d.ex].id);S.eco.splice(d.ex,1)}
+ else return;save();renderAll()});
+function renderLg(){$('#lb').innerHTML=S.log.map(l=>`<tr><td data-label="時間">${e(l.t)}</td><td data-label="操作者">${e(l.u)}</td><td data-label="動作">${e(l.a)}</td></tr>`).join('')||'<tr><td colspan="3">尚無紀錄。</td></tr>'}
+$('#me').onchange=()=>{ME=$('#me').value.trim()||ME;try{localStorage.setItem('pdm-me',ME)}catch(x){}};
+function push(){if(!DBR)return;clearTimeout(tm);tm=setTimeout(()=>{DBR.set({json:JSON.stringify(S)}).catch(()=>{})},400)}
+function sync(){if(!window.claude)return;(async()=>{try{
+ const [db,u]=await Promise.all([claude.use('db'),claude.use('user')]);
+ let named='';try{named=localStorage.getItem('pdm-me')||''}catch(x){}
+ if(u&&!named){const m=await u.me();if(m&&m.name){ME=m.name;$('#me').value=ME}}
+ if(!db)return;DBR=db.doc('state/main');$('#sy').textContent='同步中…';
+ const t=setTimeout(()=>{$('#sy').textContent='僅本機儲存'},10000);
+ DBR.onSnapshot(s=>{clearTimeout(t);$('#sy').textContent='多人同步已啟用';
+  if(!s.exists){push();return}
+  const j=(s.data()||{}).json;if(!j||s.metadata.hasPendingWrites||j===JSON.stringify(S))return;
+  try{S=JSON.parse(j);S.cm=S.cm||[];S.log=S.log||[];norm();try{localStorage.setItem(KEY,j)}catch(x){}renderAll()}catch(x){}},()=>{$('#sy').textContent='同步失敗，改為本機儲存'})
+}catch(x){}})()}
+
+load();try{const m=localStorage.getItem('pdm-me');if(m)ME=m}catch(x){}$('#me').value=ME;renderAll();sync();
+</script>
+</body>
+</html>
